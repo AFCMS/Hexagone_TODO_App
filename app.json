@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "Hexagone TODO App",
-    "slug": "hexagone_todo_app",
+    "name": "Morse Player",
+    "slug": "morse_player",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,7 @@
       "backgroundColor": "#ffffff"
     },
     "android": {
-      "package": "dev.afcms.HexagoneTodoApp",
+      "package": "dev.afcms.MorsePlayer",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -24,7 +24,7 @@
       "favicon": "./assets/favicon.png"
     },
     "ios": {
-      "bundleIdentifier": "dev.afcms.HexagoneTodoApp"
+      "bundleIdentifier": "dev.afcms.MorsePlayer"
     }
   }
 }
