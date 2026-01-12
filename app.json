@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "hexagone_todo_app",
+    "name": "Hexagone TODO App",
     "slug": "hexagone_todo_app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,10 +12,8 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
+      "package": "dev.afcms.HexagoneTodoApp",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -24,6 +22,9 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "ios": {
+      "bundleIdentifier": "dev.afcms.HexagoneTodoApp"
     }
   }
 }
