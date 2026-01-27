@@ -1,20 +1,33 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { StatusBar } from "expo-status-bar";
+
+import { useCameraFlash } from "./hooks/useCameraFlash";
+import { useMorseFeedback } from "./hooks/useMorseFeedback";
+
+import { HomeScreen } from "./screens/HomeScreen";
+import { ConfigScreen } from "./screens/ConfigScreen";
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
+  useMorseFeedback();
+  const { element: cameraFlashElement } = useCameraFlash();
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.ts to start working on your app!</Text>
+    <NavigationContainer>
       <StatusBar style="auto" />
-    </View>
+      {cameraFlashElement}
+      <Stack.Navigator id="morse-nav">
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            headerTitle: "Morse Player",
+          }}
+        />
+        <Stack.Screen name="Config" component={ConfigScreen} options={{}} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

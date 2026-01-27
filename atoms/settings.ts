@@ -4,32 +4,32 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const storage = createJSONStorage<any>(() => AsyncStorage);
 
-export const feedbackBackendVibration = atomWithStorage<boolean>(
+export const feedbackBackendVibrationAtom = atomWithStorage<boolean>(
   "feedback_backend:vibration",
   false,
-  storage
+  storage,
 );
 
-export const feedbackBackendRearCameraFlash = atomWithStorage<boolean>(
+export const feedbackBackendRearCameraFlashAtom = atomWithStorage<boolean>(
   "feedback_backend:rear_camera_flash",
   false,
-  storage
+  storage,
 );
 
-export const feedbackBackends = atom((get) => {
+export const feedbackBackendsAtom = atom((get) => {
   return {
-    vibration: get(feedbackBackendVibration),
-    rearCameraFlash: get(feedbackBackendRearCameraFlash),
+    vibration: get(feedbackBackendVibrationAtom),
+    rearCameraFlash: get(feedbackBackendRearCameraFlashAtom),
   } as const;
 });
 
-export const hasFeedbackBackendsEnabled = atom((get) => {
-  const backends = get(feedbackBackends);
+export const hasFeedbackBackendsEnabledAtom = atom((get) => {
+  const backends = get(feedbackBackendsAtom);
   return Object.values(backends).some((enabled) => enabled);
 });
 
-export const feedbackDitTimeMs = atomWithStorage<number>(
+export const feedbackDitTimeMsAtom = atomWithStorage<number>(
   "feedback:dit_time_ms",
   200,
-  storage
+  storage,
 );
