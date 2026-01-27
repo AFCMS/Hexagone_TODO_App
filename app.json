@@ -25,6 +25,14 @@
     },
     "ios": {
       "bundleIdentifier": "dev.afcms.MorsePlayer"
-    }
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera."
+        }
+      ]
+    ]
   }
 }
