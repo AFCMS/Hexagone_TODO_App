@@ -9,14 +9,18 @@
     "web": "expo start --web"
   },
   "dependencies": {
-    "expo": "~54.0.31",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@react-native-community/slider": "5.1.2",
+    "expo": "~54.0.32",
+    "expo-camera": "~17.0.10",
     "expo-status-bar": "~3.0.9",
-    "react": "19.1.0",
-    "react-native": "0.81.5"
+    "jotai": "^2.16.2",
+    "react": "19.2.4",
+    "react-native": "0.83.1"
   },
   "private": true,
   "devDependencies": {
-    "@types/react": "~19.1.17",
+    "@types/react": "~19.2.9",
     "typescript": "~5.9.3"
   }
 }
