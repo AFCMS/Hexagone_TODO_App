@@ -11,6 +11,7 @@ Built with:
 - React Native
 - Expo
 - TypeScript
+- Firebase
 - PNPM
 
 ```shell

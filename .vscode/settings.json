@@ -16,5 +16,8 @@
         "editor.defaultFormatter": "esbenp.prettier-vscode",
         "editor.tabSize": 2,
         "editor.indentSize": 2,
+    },
+    "chat.tools.terminal.autoApprove": {
+        "npx tsc": true
     }
 }

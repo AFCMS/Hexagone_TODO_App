@@ -1,6 +1,8 @@
 import { atom } from "jotai";
 import { atomWithReset } from "jotai/utils";
+
 import { textToMorse } from "../utils/morse_utils";
+import type { FirebaseMessage } from "../backend/fire";
 
 export const hasCameraPermission = atom<boolean>(false);
 
@@ -20,4 +22,27 @@ export const playbackMessageMorseAtom = atom<string | null>((get) => {
 
 export const playbackIsPlayingAtom = atom<boolean>(
   (get) => get(playbackMessageAtom) !== null,
+);
+
+/**
+ * Stores the list of messages fetched from Firebase
+ */
+export const firebaseMessagesAtom = atom<FirebaseMessage[]>([]);
+
+/**
+ * Currently selected Firebase message ID for playback
+ */
+const initialSelectedId: string | null = null;
+export const selectedFirebaseMessageIdAtom = atom(initialSelectedId);
+
+/**
+ * Derived atom to get the currently selected Firebase message
+ */
+export const selectedFirebaseMessageAtom = atom<FirebaseMessage | null>(
+  (get) => {
+    const messages = get(firebaseMessagesAtom);
+    const selectedId = get(selectedFirebaseMessageIdAtom);
+    if (!selectedId) return null;
+    return messages.find((m) => m.id === selectedId) ?? null;
+  },
 );
