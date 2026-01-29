@@ -20,6 +20,7 @@ import {
   createMessage,
   deleteMessage,
   updateMessageName,
+  updateMessage,
   getCurrentUser,
   type FirebaseMessage,
 } from "../backend/fire";
@@ -30,7 +31,8 @@ import {
 interface MessageItemProps {
   readonly item: FirebaseMessage;
   readonly onDelete: (id: string) => void;
-  readonly onEdit: (id: string, newName: string) => void;
+  readonly onEditName: (id: string, newName: string) => void;
+  readonly onEditMessage: (id: string, newMessage: string) => void;
 }
 
 /**
@@ -39,16 +41,19 @@ interface MessageItemProps {
 function MessageItem(props: MessageItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(props.item.name);
+  const [editedMessage, setEditedMessage] = useState(props.item.message);
 
   const handleSave = () => {
-    if (editedName.trim()) {
-      props.onEdit(props.item.id, editedName.trim());
+    if (editedName.trim() && editedMessage.trim()) {
+      props.onEditName(props.item.id, editedName.trim());
+      props.onEditMessage(props.item.id, editedMessage.trim());
       setIsEditing(false);
     }
   };
 
   const handleCancel = () => {
     setEditedName(props.item.name);
+    setEditedMessage(props.item.message);
     setIsEditing(false);
   };
 
@@ -56,11 +61,21 @@ function MessageItem(props: MessageItemProps) {
     <View style={styles.messageItem}>
       {isEditing ? (
         <View style={styles.editContainer}>
+          <Text style={styles.editLabel}>Name:</Text>
           <TextInput
             style={styles.editInput}
             value={editedName}
             onChangeText={setEditedName}
-            autoFocus
+            placeholder="Message name"
+          />
+          <Text style={styles.editLabel}>Message:</Text>
+          <TextInput
+            style={[styles.editInput, styles.messageInput]}
+            value={editedMessage}
+            onChangeText={setEditedMessage}
+            placeholder="Message content"
+            multiline
+            numberOfLines={3}
           />
           <View style={styles.editButtons}>
             <Pressable style={styles.saveButton} onPress={handleSave}>
@@ -171,11 +186,22 @@ export function SavedMessagesScreen() {
   /**
    * Edit a message name
    */
-  const handleEdit = async (id: string, newNameValue: string) => {
+  const handleEditName = async (id: string, newNameValue: string) => {
     try {
       await updateMessageName(id, newNameValue);
     } catch (err) {
-      Alert.alert("Error", "Failed to update message");
+      Alert.alert("Error", "Failed to update message name");
+    }
+  };
+
+  /**
+   * Edit a message content
+   */
+  const handleEditMessage = async (id: string, newMessageValue: string) => {
+    try {
+      await updateMessage(id, newMessageValue);
+    } catch (err) {
+      Alert.alert("Error", "Failed to update message content");
     }
   };
 
@@ -231,7 +257,8 @@ export function SavedMessagesScreen() {
               <MessageItem
                 item={item}
                 onDelete={handleDelete}
-                onEdit={handleEdit}
+                onEditName={handleEditName}
+                onEditMessage={handleEditMessage}
               />
             )}
             style={styles.list}
@@ -371,5 +398,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 4,
+  },
+  editLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 4,
+  },
+  messageInput: {
+    minHeight: 80,
+    textAlignVertical: "top",
   },
 });
