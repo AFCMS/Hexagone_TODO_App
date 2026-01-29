@@ -8,6 +8,9 @@ import {
   Pressable,
   Alert,
   ActivityIndicator,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 
 import { Button } from "@react-navigation/elements";
@@ -31,83 +34,124 @@ import {
 interface MessageItemProps {
   readonly item: FirebaseMessage;
   readonly onDelete: (id: string) => void;
-  readonly onEditName: (id: string, newName: string) => void;
-  readonly onEditMessage: (id: string, newMessage: string) => void;
+  readonly onEdit: (id: string) => void;
 }
 
 /**
- * Individual message item component with edit/delete functionality
+ * Props for the EditMessageModal component
  */
-function MessageItem(props: MessageItemProps) {
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedName, setEditedName] = useState(props.item.name);
-  const [editedMessage, setEditedMessage] = useState(props.item.message);
+interface EditMessageModalProps {
+  readonly visible: boolean;
+  readonly message: FirebaseMessage | null;
+  readonly onSave: (id: string, name: string, message: string) => void;
+  readonly onCancel: () => void;
+}
+
+/**
+ * Modal component for editing messages
+ */
+function EditMessageModal(props: EditMessageModalProps) {
+  const [editedName, setEditedName] = useState("");
+  const [editedMessage, setEditedMessage] = useState("");
+
+  // Update local state when message changes
+  useEffect(() => {
+    if (props.message) {
+      setEditedName(props.message.name);
+      setEditedMessage(props.message.message);
+    }
+  }, [props.message]);
 
   const handleSave = () => {
-    if (editedName.trim() && editedMessage.trim()) {
-      props.onEditName(props.item.id, editedName.trim());
-      props.onEditMessage(props.item.id, editedMessage.trim());
-      setIsEditing(false);
+    if (props.message && editedName.trim() && editedMessage.trim()) {
+      props.onSave(props.message.id, editedName.trim(), editedMessage.trim());
     }
   };
 
   const handleCancel = () => {
-    setEditedName(props.item.name);
-    setEditedMessage(props.item.message);
-    setIsEditing(false);
+    props.onCancel();
   };
 
   return (
-    <View style={styles.messageItem}>
-      {isEditing ? (
-        <View style={styles.editContainer}>
+    <Modal
+      visible={props.visible}
+      animationType="slide"
+      presentationStyle="pageSheet"
+      onRequestClose={handleCancel}
+    >
+      <KeyboardAvoidingView
+        style={styles.modalContainer}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+      >
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Edit Message</Text>
+          <Pressable style={styles.closeButton} onPress={handleCancel}>
+            <Text style={styles.closeButtonText}>✕</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.modalContent}>
           <Text style={styles.editLabel}>Name:</Text>
           <TextInput
-            style={styles.editInput}
+            style={styles.modalInput}
             value={editedName}
             onChangeText={setEditedName}
             placeholder="Message name"
+            autoFocus
           />
+
           <Text style={styles.editLabel}>Message:</Text>
           <TextInput
-            style={[styles.editInput, styles.messageInput]}
+            style={[styles.modalInput, styles.messageInput]}
             value={editedMessage}
             onChangeText={setEditedMessage}
             placeholder="Message content"
             multiline
-            numberOfLines={3}
+            numberOfLines={6}
+            textAlignVertical="top"
           />
-          <View style={styles.editButtons}>
+
+          <View style={styles.modalButtons}>
             <Pressable style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.buttonText}>Save</Text>
+              <Text style={styles.buttonText}>Save Changes</Text>
             </Pressable>
             <Pressable style={styles.cancelButton} onPress={handleCancel}>
               <Text style={styles.buttonText}>Cancel</Text>
             </Pressable>
           </View>
         </View>
-      ) : (
-        <View style={styles.messageContent}>
-          <View style={styles.messageInfo}>
-            <Text style={styles.messageName}>{props.item.name}</Text>
-            <Text style={styles.messageText}>{props.item.message}</Text>
-          </View>
-          <View style={styles.actionButtons}>
-            <Pressable
-              style={styles.editButton}
-              onPress={() => setIsEditing(true)}
-            >
-              <Text style={styles.buttonText}>Edit</Text>
-            </Pressable>
-            <Pressable
-              style={styles.deleteButton}
-              onPress={() => props.onDelete(props.item.id)}
-            >
-              <Text style={styles.buttonText}>Delete</Text>
-            </Pressable>
-          </View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+}
+
+/**
+ * Individual message item component with edit/delete functionality
+ */
+function MessageItem(props: MessageItemProps) {
+  return (
+    <View style={styles.messageItem}>
+      <View style={styles.messageContent}>
+        <View style={styles.messageInfo}>
+          <Text style={styles.messageName}>{props.item.name}</Text>
+          <Text style={styles.messageText}>{props.item.message}</Text>
         </View>
-      )}
+        <View style={styles.actionButtons}>
+          <Pressable
+            style={styles.editButton}
+            onPress={() => props.onEdit(props.item.id)}
+          >
+            <Text style={styles.buttonText}>Edit</Text>
+          </Pressable>
+          <Pressable
+            style={styles.deleteButton}
+            onPress={() => props.onDelete(props.item.id)}
+          >
+            <Text style={styles.buttonText}>Delete</Text>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
@@ -122,6 +166,9 @@ export function SavedMessagesScreen() {
   const [newName, setNewName] = useState("");
   const [newMessage, setNewMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [editingMessage, setEditingMessage] = useState<FirebaseMessage | null>(
+    null,
+  );
 
   // Listen to messages when user is authenticated
   useEffect(() => {
@@ -205,6 +252,36 @@ export function SavedMessagesScreen() {
     }
   };
 
+  /**
+   * Open edit modal for a message
+   */
+  const handleEdit = (id: string) => {
+    const message = messages.find((msg) => msg.id === id);
+    if (message) {
+      setEditingMessage(message);
+    }
+  };
+
+  /**
+   * Save changes from modal
+   */
+  const handleModalSave = async (id: string, name: string, message: string) => {
+    try {
+      await updateMessageName(id, name);
+      await updateMessage(id, message);
+      setEditingMessage(null);
+    } catch (err) {
+      Alert.alert("Error", "Failed to update message");
+    }
+  };
+
+  /**
+   * Close the edit modal
+   */
+  const handleModalCancel = () => {
+    setEditingMessage(null);
+  };
+
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
@@ -257,14 +334,20 @@ export function SavedMessagesScreen() {
               <MessageItem
                 item={item}
                 onDelete={handleDelete}
-                onEditName={handleEditName}
-                onEditMessage={handleEditMessage}
+                onEdit={handleEdit}
               />
             )}
             style={styles.list}
           />
         )}
       </View>
+
+      <EditMessageModal
+        visible={editingMessage !== null}
+        message={editingMessage}
+        onSave={handleModalSave}
+        onCancel={handleModalCancel}
+      />
     </View>
   );
 }
@@ -372,21 +455,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
   },
-  editContainer: {
-    gap: 10,
-  },
-  editInput: {
-    backgroundColor: "#f9f9f9",
-    borderWidth: 1,
-    borderColor: "#2196f3",
-    borderRadius: 6,
-    padding: 10,
-    fontSize: 16,
-  },
-  editButtons: {
-    flexDirection: "row",
-    gap: 8,
-  },
   saveButton: {
     backgroundColor: "#4caf50",
     paddingHorizontal: 16,
@@ -408,5 +476,46 @@ const styles = StyleSheet.create({
   messageInput: {
     minHeight: 80,
     textAlignVertical: "top",
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  closeButton: {
+    padding: 8,
+  },
+  closeButtonText: {
+    fontSize: 24,
+    color: "#666",
+  },
+  modalContent: {
+    flex: 1,
+    padding: 20,
+  },
+  modalInput: {
+    backgroundColor: "#f9f9f9",
+    borderWidth: 1,
+    borderColor: "#2196f3",
+    borderRadius: 6,
+    padding: 12,
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    gap: 12,
+    marginTop: 20,
   },
 });
